@@ -5,7 +5,7 @@ use strict;
 use Carp;
 use Module::Load;
 
-our $VERSION = '0.001001';
+our $VERSION = '0.001002';
 
 =head1 NAME
 
@@ -146,20 +146,21 @@ sub log {
     my $request  = shift or croak "Plack::Request object required";
     my $response = shift or croak "Response object required";
     my %stats    = (
-        build_time  => $response->build_time,
-        search_time => $response->search_time,
         remote_user => $request->user,
         tstamp      => time(),
+        build_time  => $response->build_time,
+        search_time => $response->search_time,
+        path        => $request->uri->path,
     );
     my $params = $request->parameters;
-    if ( ref $response eq 'HASH' ) {
+    if ( $response->isa('Search::OpenSearch::Result') ) {
 
         # a REST request on a specific doc
 
     }
     else {
 
-        # a search request
+        # a SOS::Response
         # TODO document and/or whitelist these
         for my $p (qw( q s o p h c L f r t b )) {
             $stats{$p} = $params->{$p};

@@ -7,7 +7,7 @@ use Carp;
 use DBIx::Connector;
 use DBIx::InsertHash;
 
-our $VERSION = '0.001001';
+our $VERSION = '0.001002';
 
 =head1 NAME
 
@@ -94,12 +94,13 @@ Example:
 sub schema {
     return <<EOF
 create table dezi_stats (
-    id integer primary key autoincrement,
-    tstamp integer,
-    q text,
-    build_time float,
+    id          integer primary key autoincrement,
+    tstamp      integer,
+    q           text,
+    build_time  float,
     search_time float,
     remote_user text,
+    path        varchar(255),
     s text,
     o integer,
     p integer,
