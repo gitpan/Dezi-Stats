@@ -7,7 +7,7 @@ use Carp;
 use DBIx::Connector;
 use DBIx::InsertHash;
 
-our $VERSION = '0.001004';
+our $VERSION = '0.001005';
 
 =head1 NAME
 
@@ -63,6 +63,16 @@ sub conn {
     return shift->{conn};
 }
 
+=head2 table_name
+
+Returns the table_name. Default is C<dezi_stats>.
+
+=cut
+
+sub table_name {
+    return shift->{table_name};
+}
+
 =head2 insert( I<hashref> )
 
 Writes I<hashref> to the database.
@@ -89,11 +99,32 @@ Example:
 
  perl -e 'use Dezi::Stats::DBI; print Dezi::Stats::DBI::schema' | sqlite3 dezi.index/stats.db
 
+You can use SQL::Translator to initialize a non-SQLite database:
+
+ my $dbh        = DBI->connect($dsn, $user, $pass);
+ my $sql        = Dezi::Stats::DBI::schema();
+ my $translator = SQL::Translator->new(
+    show_warnings     => 1,
+    validate          => 1,
+    quote_identifiers => 1,
+    no_comments       => 1,
+ );
+ my $mysql = $translator->translate(
+    from       => 'SQLite',
+    to         => 'MySQL',
+    datasource => \$sql
+ ) or die $translator->error;
+
+ # Translator adds extra statements that do() can't handle.
+ $mysql =~ s/^.*(CREATE TABLE .+?\));.*$/$1/s;
+
+ $dbh->do($mysql);
+
 =cut
 
 sub schema {
     return <<EOF
-create table dezi_stats (
+create table if not exists dezi_stats (
     id          integer primary key autoincrement,
     tstamp      integer,
     q           text,
